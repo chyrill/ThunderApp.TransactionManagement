@@ -5,7 +5,7 @@ export async function Authorization(bearer) {
     var data = {};
     try {
         var authCode = bearer.split(" ")[1];
-        await axios.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode })
+        await axios.post('http://5aa2c5bc.ngrok.io/api/v1/userLogin/authorize', { Authorization: authCode })
             .then(response => {
                 console.log(response.data)
                 data = response.data;

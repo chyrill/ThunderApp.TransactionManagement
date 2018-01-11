@@ -33,7 +33,7 @@ export async function create(req, res) {
         shoppingCartRes.Status = "For Qoute";
 
         var updateShoppingCart = await ShoppingCart.findOneAndUpdate({ _id: shoppingCartRes._id }, shoppingCartRes, { upsert: true, strict: false });
-
+        req.body.TotalQuote = 0;
         req.body.UserId = shoppingCartRes.UserId;
         req.body.Items = shoppingCartRes.Items;
         req.body.Status = "New";
@@ -46,6 +46,7 @@ export async function create(req, res) {
 
         return res.status(200).json(result);
     } catch (e) {
+        console.log(e)
         result.model = null;
         result.message = e.errmsg;
         result.successful = false;
@@ -116,4 +117,70 @@ export async function getById(req, res) {
         result.message = e.errmsg;
         return res.status(500).json(result)
     }
+}
+
+export async function updateQuotation(req,res) {
+  var result = new Result();
+
+  try{
+    var authRes = await Authorization(req.headers.authorization);
+
+    if (authRes.successful != true) {
+        result.model = req.body;
+        result.message = authRes.message;
+        result.successful = false;
+        return res.status(401).json(result);
+    } else {
+        req.body.Context = authRes.model.Context;
+        req.body.UpdatedBy = authRes.model.Name;
+        req.body.DateUpdated = new Date();
+    }
+
+    req.body.Status = "Quoted";
+
+    var item = await Quotation.findOneAndUpdate({_id: req.body._id},req.body,{Upsert: true, Strict: false});
+
+    result.model = item;
+    result.successful = true;
+    result.message= 'Succesfully updated record';
+    return res.status(200).json(result);
+  }
+  catch (e) {
+    result.model = null;
+    result.successful = false;
+    result.message = e.errmsg;
+    return res.status(500).json(result);
+  }
+}
+
+export async function getQuotationsById(req,res) {
+  var result = new SearchResult()
+  try{
+    var authRes = await Authorization(req.headers.authorization);
+
+    if (authRes.successful != true) {
+        result.model = req.body;
+        result.message = authRes.message;
+        result.successful = false;
+        return res.status(401).json(result);
+    } else {
+        req.body.Context = authRes.model.Context;
+    }
+
+    var searchRes = await Quotation.find({UserId:req.params.id,Status:"Quoted"});
+    result.items = searchRes;
+    result.totalcount = searchRes.length;
+    result.message = 'Succesfully retreive data';
+    result.successful = true;
+    result.pages = 1;
+    return res.status(200).json(result);
+  }
+  catch(e) {
+    result.items = null;
+    result.totalcount = 0;
+    result.message = e.errmsg;
+    result.successful = false;
+    result.pages = 0;
+    return res.status(500).json(result);
+  }
 }
