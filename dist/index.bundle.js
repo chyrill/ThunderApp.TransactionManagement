@@ -401,123 +401,9 @@ exports.default = routes;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.update = exports.getByUserId = exports.create = undefined;
-
-let create = exports.create = (() => {
-    var _ref = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-
-            if (req.body.UserId === null || req.body.CreatedBy === null) {
-                result.model = req.body;
-                result.message = 'User Id is required';
-                result.successful = false;
-
-                return res.status(400).json(result);
-            }
-            var dateNow = new Date();
-
-            var expirationDate = dateNow.setDate(dateNow.getDate() + 1);
-
-            req.body.ExpirationDate = expirationDate;
-            req.body.Status = "New";
-
-            var cartRes = yield _shoppingcart2.default.create(req.body);
-
-            result.model = cartRes;
-            result.message = 'Successfully Created Shopping Cart';
-            result.successful = false;
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.model = req.body;
-            result.message = e.errmsg;
-            result.successful = false;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function create(_x, _x2) {
-        return _ref.apply(this, arguments);
-    };
-})();
-
-let getByUserId = exports.getByUserId = (() => {
-    var _ref2 = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-            if (req.params.UserId === 0 || req.params.UserId === null) {
-                result.model = null;
-                result.message = 'User Id is required';
-                result.successful = false;
-
-                return res.status(400).json(result);
-            }
-
-            var shoppingCartRes = yield _shoppingcart2.default.findOne({ UserId: req.params.UserId, Status: "New" });
-
-            if (shoppingCartRes === null) {
-                result.model = null;
-                result.message = 'No data retrieve';
-                result.successful = false;
-
-                return res.status(400).json(result);
-            }
-            result.model = shoppingCartRes;
-            result.message = 'Successfully retrieve shopping cart';
-            result.successful = true;
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.model = null;
-            result.message = e.errmsg;
-            result.successful = false;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function getByUserId(_x3, _x4) {
-        return _ref2.apply(this, arguments);
-    };
-})();
-
-let update = exports.update = (() => {
-    var _ref3 = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-            if (req.body.UserId === null || req.body.CreatedBy === null) {
-                result.model = req.body;
-                result.message = 'User Id is required';
-                result.successful = false;
-
-                return res.status(400).json(result);
-            }
-
-            var shoppingCartRes = yield _shoppingcart2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { upsert: true, strict: false });
-
-            result.model = shoppingCartRes;
-            result.message = 'Successfully updated shopping cart';
-            result.successful = true;
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.model = req.body;
-            result.message = e.errmsg;
-            result.successful = false;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function update(_x5, _x6) {
-        return _ref3.apply(this, arguments);
-    };
-})();
+exports.create = create;
+exports.getByUserId = getByUserId;
+exports.update = update;
 
 var _Result = __webpack_require__(2);
 
@@ -529,7 +415,103 @@ var _shoppingcart2 = _interopRequireDefault(_shoppingcart);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+
+        if (req.body.UserId === null || req.body.CreatedBy === null) {
+            result.model = req.body;
+            result.message = 'User Id is required';
+            result.successful = false;
+
+            return res.status(400).json(result);
+        }
+        var dateNow = new Date();
+
+        var expirationDate = dateNow.setDate(dateNow.getDate() + 1);
+
+        req.body.ExpirationDate = expirationDate;
+        req.body.Status = "New";
+
+        var cartRes = await _shoppingcart2.default.create(req.body);
+
+        result.model = cartRes;
+        result.message = 'Successfully Created Shopping Cart';
+        result.successful = false;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.model = req.body;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function getByUserId(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        if (req.params.UserId === 0 || req.params.UserId === null) {
+            result.model = null;
+            result.message = 'User Id is required';
+            result.successful = false;
+
+            return res.status(400).json(result);
+        }
+
+        var shoppingCartRes = await _shoppingcart2.default.findOne({ UserId: req.params.UserId, Status: "New" });
+
+        if (shoppingCartRes === null) {
+            result.model = null;
+            result.message = 'No data retrieve';
+            result.successful = false;
+
+            return res.status(400).json(result);
+        }
+        result.model = shoppingCartRes;
+        result.message = 'Successfully retrieve shopping cart';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.model = null;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function update(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        if (req.body.UserId === null || req.body.CreatedBy === null) {
+            result.model = req.body;
+            result.message = 'User Id is required';
+            result.successful = false;
+
+            return res.status(400).json(result);
+        }
+
+        var shoppingCartRes = await _shoppingcart2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { upsert: true, strict: false });
+
+        result.model = shoppingCartRes;
+        result.message = 'Successfully updated shopping cart';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.model = req.body;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
 
 /***/ }),
 /* 16 */
@@ -570,216 +552,11 @@ exports.default = routes;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getQuotationsById = exports.updateQuotation = exports.getById = exports.searchNew = exports.create = undefined;
-
-let create = exports.create = (() => {
-    var _ref = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-
-            var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
-
-            if (authRes.successful != true) {
-                result.model = req.body;
-                result.message = authRes.message;
-                result.successful = false;
-                return res.status(401).json(result);
-            } else {
-                req.body.Context = authRes.model.Context;
-                req.body.CreatedBy = authRes.model.Name;
-                req.body.DateCreated = new Date();
-            }
-
-            var shoppingCartRes = yield _shoppingcart2.default.findOne({ _id: req.body.ShoppingCartId });
-            if (shoppingCartRes === null) {
-                result.message = 'Shopping cart not found';
-                result.model = req.model;
-                result.successful = false;
-
-                return res.status(400).json(result);
-            }
-            shoppingCartRes.Status = "For Qoute";
-
-            var updateShoppingCart = yield _shoppingcart2.default.findOneAndUpdate({ _id: shoppingCartRes._id }, shoppingCartRes, { upsert: true, strict: false });
-            req.body.TotalQuote = 0;
-            req.body.UserId = shoppingCartRes.UserId;
-            req.body.Items = shoppingCartRes.Items;
-            req.body.Status = "New";
-            console.log(req.body);
-            var createRes = yield _quotation2.default.create(req.body);
-
-            result.model = createRes;
-            result.message = 'Succesfully created quotation';
-            result.successful = true;
-
-            return res.status(200).json(result);
-        } catch (e) {
-            console.log(e);
-            result.model = null;
-            result.message = e.errmsg;
-            result.successful = false;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function create(_x, _x2) {
-        return _ref.apply(this, arguments);
-    };
-})();
-
-let searchNew = exports.searchNew = (() => {
-    var _ref2 = _asyncToGenerator(function* (req, res) {
-        var result = new _SearchResult2.default();
-
-        var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
-
-        if (authRes.successful != true) {
-            result.model = req.body;
-            result.message = authRes.message;
-            result.successful = false;
-            return res.status(401).json(result);
-        } else {
-            req.body.Context = authRes.model.Context;
-            req.body.CreatedBy = authRes.model.Name;
-        }
-        req.body.TotalQuote = 0;
-        var items = yield _quotation2.default.find({ Context: req.body.Context, Status: 'New' });
-
-        if (items.length < 0) {
-            result.items = null;
-            result.message = 'No records found';
-            result.totalcount = 0;
-            result.pages = 0;
-            result.successful = false;
-            return res.status(400).json(result);
-        }
-
-        result.items = items;
-        result.message = 'Succesfully retrieve records';
-        result.totalcount = items.length;
-        result.successful = true;
-        return res.status(200).json(result);
-    });
-
-    return function searchNew(_x3, _x4) {
-        return _ref2.apply(this, arguments);
-    };
-})();
-
-let getById = exports.getById = (() => {
-    var _ref3 = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-            var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
-
-            if (authRes.successful != true) {
-                result.model = req.body;
-                result.message = authRes.message;
-                result.successful = false;
-                return res.status(401).json(result);
-            } else {
-                req.body.Context = authRes.model.Context;
-                req.body.CreatedBy = authRes.model.Name;
-            }
-
-            var item = yield _quotation2.default.findOne({ _id: req.params.id, Context: req.body.Context });
-
-            result.model = item;
-            result.successful = true;
-            result.message = 'Succesfully retrieve data';
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.model = null;
-            result.successful = false;
-            result.message = e.errmsg;
-            return res.status(500).json(result);
-        }
-    });
-
-    return function getById(_x5, _x6) {
-        return _ref3.apply(this, arguments);
-    };
-})();
-
-let updateQuotation = exports.updateQuotation = (() => {
-    var _ref4 = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-            var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
-
-            if (authRes.successful != true) {
-                result.model = req.body;
-                result.message = authRes.message;
-                result.successful = false;
-                return res.status(401).json(result);
-            } else {
-                req.body.Context = authRes.model.Context;
-                req.body.UpdatedBy = authRes.model.Name;
-                req.body.DateUpdated = new Date();
-            }
-
-            req.body.Status = "Quoted";
-
-            var item = yield _quotation2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { Upsert: true, Strict: false });
-
-            result.model = item;
-            result.successful = true;
-            result.message = 'Succesfully updated record';
-            return res.status(200).json(result);
-        } catch (e) {
-            result.model = null;
-            result.successful = false;
-            result.message = e.errmsg;
-            return res.status(500).json(result);
-        }
-    });
-
-    return function updateQuotation(_x7, _x8) {
-        return _ref4.apply(this, arguments);
-    };
-})();
-
-let getQuotationsById = exports.getQuotationsById = (() => {
-    var _ref5 = _asyncToGenerator(function* (req, res) {
-        var result = new _SearchResult2.default();
-        try {
-            var authRes = yield (0, _Authorization.Authorization)(req.headers.authorization);
-
-            if (authRes.successful != true) {
-                result.model = req.body;
-                result.message = authRes.message;
-                result.successful = false;
-                return res.status(401).json(result);
-            } else {
-                req.body.Context = authRes.model.Context;
-            }
-
-            var searchRes = yield _quotation2.default.find({ UserId: req.params.id, Status: "Quoted" });
-            result.items = searchRes;
-            result.totalcount = searchRes.length;
-            result.message = 'Succesfully retreive data';
-            result.successful = true;
-            result.pages = 1;
-            return res.status(200).json(result);
-        } catch (e) {
-            result.items = null;
-            result.totalcount = 0;
-            result.message = e.errmsg;
-            result.successful = false;
-            result.pages = 0;
-            return res.status(500).json(result);
-        }
-    });
-
-    return function getQuotationsById(_x9, _x10) {
-        return _ref5.apply(this, arguments);
-    };
-})();
+exports.create = create;
+exports.searchNew = searchNew;
+exports.getById = getById;
+exports.updateQuotation = updateQuotation;
+exports.getQuotationsById = getQuotationsById;
 
 var _quotation = __webpack_require__(18);
 
@@ -801,7 +578,186 @@ var _shoppingcart2 = _interopRequireDefault(_shoppingcart);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+
+        var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authRes.successful != true) {
+            console.log(authRes);
+            result.model = req.body;
+            result.message = authRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authRes.model.Context;
+            req.body.CreatedBy = authRes.model.Name;
+            req.body.DateCreated = new Date();
+        }
+
+        var shoppingCartRes = await _shoppingcart2.default.findOne({ _id: req.body.ShoppingCartId });
+        if (shoppingCartRes === null) {
+            result.message = 'Shopping cart not found';
+            result.model = req.model;
+            result.successful = false;
+
+            return res.status(400).json(result);
+        }
+        shoppingCartRes.Status = "For Qoute";
+
+        var updateShoppingCart = await _shoppingcart2.default.findOneAndUpdate({ _id: shoppingCartRes._id }, shoppingCartRes, { upsert: true, strict: false });
+        req.body.TotalQuote = 0;
+        req.body.UserId = shoppingCartRes.UserId;
+        req.body.Items = shoppingCartRes.Items;
+        req.body.Status = "New";
+
+        console.log(req.body);
+        var createRes = await _quotation2.default.create(req.body);
+
+        result.model = createRes;
+        result.message = 'Succesfully created quotation';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        console.log(e);
+        result.model = null;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function searchNew(req, res) {
+    var result = new _SearchResult2.default();
+
+    var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+    if (authRes.successful != true) {
+        result.model = req.body;
+        result.message = authRes.message;
+        result.successful = false;
+        return res.status(401).json(result);
+    } else {
+        req.body.Context = authRes.model.Context;
+        req.body.CreatedBy = authRes.model.Name;
+    }
+    req.body.TotalQuote = 0;
+    var items = await _quotation2.default.find({ Context: req.body.Context, Status: 'New' });
+
+    if (items.length < 0) {
+        result.items = null;
+        result.message = 'No records found';
+        result.totalcount = 0;
+        result.pages = 0;
+        result.successful = false;
+        return res.status(400).json(result);
+    }
+
+    result.items = items;
+    result.message = 'Succesfully retrieve records';
+    result.totalcount = items.length;
+    result.successful = true;
+    return res.status(200).json(result);
+}
+
+async function getById(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authRes.successful != true) {
+            result.model = req.body;
+            result.message = authRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authRes.model.Context;
+            req.body.CreatedBy = authRes.model.Name;
+        }
+
+        var item = await _quotation2.default.findOne({ _id: req.params.id, Context: req.body.Context });
+
+        result.model = item;
+        result.successful = true;
+        result.message = 'Succesfully retrieve data';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.model = null;
+        result.successful = false;
+        result.message = e.errmsg;
+        return res.status(500).json(result);
+    }
+}
+
+async function updateQuotation(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authRes.successful != true) {
+            result.model = req.body;
+            result.message = authRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authRes.model.Context;
+            req.body.UpdatedBy = authRes.model.Name;
+            req.body.DateUpdated = new Date();
+        }
+
+        req.body.Status = "Quoted";
+
+        var item = await _quotation2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { Upsert: true, Strict: false });
+
+        result.model = item;
+        result.successful = true;
+        result.message = 'Succesfully updated record';
+        return res.status(200).json(result);
+    } catch (e) {
+        result.model = null;
+        result.successful = false;
+        result.message = e.errmsg;
+        return res.status(500).json(result);
+    }
+}
+
+async function getQuotationsById(req, res) {
+    var result = new _SearchResult2.default();
+    try {
+        var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authRes.successful != true) {
+            result.model = req.body;
+            result.message = authRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authRes.model.Context;
+        }
+
+        var searchRes = await _quotation2.default.find({ UserId: req.params.id, Status: "Quoted" });
+        result.items = searchRes;
+        result.totalcount = searchRes.length;
+        result.message = 'Succesfully retreive data';
+        result.successful = true;
+        result.pages = 1;
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = null;
+        result.totalcount = 0;
+        result.message = e.errmsg;
+        result.successful = false;
+        result.pages = 0;
+        return res.status(500).json(result);
+    }
+}
 
 /***/ }),
 /* 18 */
@@ -895,33 +851,7 @@ exports.default = SearchResult;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Authorization = undefined;
-
-let Authorization = exports.Authorization = (() => {
-    var _ref = _asyncToGenerator(function* (bearer) {
-        var data = {};
-        try {
-            var authCode = bearer.split(" ")[1];
-            yield _axios2.default.post('http://5aa2c5bc.ngrok.io/api/v1/userLogin/authorize', { Authorization: authCode }).then(function (response) {
-                console.log(response.data);
-                data = response.data;
-            }).catch(function (err) {
-
-                data = err.response.data;
-            });
-            return data;
-        } catch (e) {
-            console.log(e);
-            result.message = e;
-            result.successful = false;
-            return result;
-        }
-    });
-
-    return function Authorization(_x) {
-        return _ref.apply(this, arguments);
-    };
-})();
+exports.Authorization = Authorization;
 
 var _axios = __webpack_require__(21);
 
@@ -933,9 +863,25 @@ var _Result2 = _interopRequireDefault(_Result);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+async function Authorization(bearer) {
+    var data = {};
+    try {
+        var authCode = bearer.split(" ")[1];
+        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
+            console.log(response.data);
+            data = response.data;
+        }).catch(err => {
 
-;
+            data = err.response.data;
+        });
+        return data;
+    } catch (e) {
+        console.log(e);
+        result.message = e;
+        result.successful = false;
+        return result;
+    }
+};
 
 /***/ }),
 /* 21 */

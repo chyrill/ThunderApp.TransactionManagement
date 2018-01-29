@@ -12,6 +12,7 @@ export async function create(req, res) {
         var authRes = await Authorization(req.headers.authorization);
 
         if (authRes.successful != true) {
+            console.log(authRes);
             result.model = req.body;
             result.message = authRes.message;
             result.successful = false;
@@ -37,6 +38,7 @@ export async function create(req, res) {
         req.body.UserId = shoppingCartRes.UserId;
         req.body.Items = shoppingCartRes.Items;
         req.body.Status = "New";
+        
         console.log(req.body)
         var createRes = await Quotation.create(req.body);
 
