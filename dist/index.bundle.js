@@ -539,6 +539,7 @@ routes.get('/new', QuotationController.searchNew);
 routes.get('/:id', QuotationController.getById);
 routes.put('/quote', QuotationController.updateQuotation);
 routes.get('/quote/:id', QuotationController.getQuotationsById);
+routes.get('', QuotationController.search);
 
 exports.default = routes;
 
@@ -557,6 +558,7 @@ exports.searchNew = searchNew;
 exports.getById = getById;
 exports.updateQuotation = updateQuotation;
 exports.getQuotationsById = getQuotationsById;
+exports.search = search;
 
 var _quotation = __webpack_require__(18);
 
@@ -576,6 +578,8 @@ var _shoppingcart = __webpack_require__(4);
 
 var _shoppingcart2 = _interopRequireDefault(_shoppingcart);
 
+var _QueryFilters = __webpack_require__(22);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 async function create(req, res) {
@@ -586,7 +590,6 @@ async function create(req, res) {
         var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
 
         if (authRes.successful != true) {
-            console.log(authRes);
             result.model = req.body;
             result.message = authRes.message;
             result.successful = false;
@@ -613,7 +616,6 @@ async function create(req, res) {
         req.body.Items = shoppingCartRes.Items;
         req.body.Status = "New";
 
-        console.log(req.body);
         var createRes = await _quotation2.default.create(req.body);
 
         result.model = createRes;
@@ -622,7 +624,7 @@ async function create(req, res) {
 
         return res.status(200).json(result);
     } catch (e) {
-        console.log(e);
+
         result.model = null;
         result.message = e.errmsg;
         result.successful = false;
@@ -714,6 +716,12 @@ async function updateQuotation(req, res) {
 
         req.body.Status = "Quoted";
 
+        if (req.body.ExpirationDate === null || req.body.ExpirationDate === undefined) {
+            var expireDate = new Date();
+            expireDate = expireDate.setDate(expireDate.getDate() + 45);
+            req.body['ExpirationDate'] = expireDate;
+        }
+
         var item = await _quotation2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { Upsert: true, Strict: false });
 
         result.model = item;
@@ -759,6 +767,57 @@ async function getQuotationsById(req, res) {
     }
 }
 
+async function search(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        if (req.query.limit === null || req.query.limit === undefined) {
+            req.query.limit = 20;
+        }
+        var filters = {};
+        if (req.query.Filters != null) {
+            filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.body.Context);
+        } else {
+            filters["Context"] = req.body.Context;
+        }
+
+        var quotationsRes = await _quotation2.default.find(filters);
+
+        var totalcount = quotationsRes.length;
+        var pages = Math.ceil(quotationsRes.length / req.query.limit);
+
+        var finalItems = await _quotation2.default.find(filters).skip(Number(req.query.skip)).limit(Number(req.query.limit)).sort(req.query.sort);
+
+        result.items = finalItems;
+        result.totalcount = totalcount;
+        result.pages = pages;
+        result.message = 'Successfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = 0;
+        result.totalcount = 0;
+        result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
 /***/ }),
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -796,6 +855,9 @@ const QuotationSchema = new _mongoose.Schema({
     },
     Customer: {
         type: Object
+    },
+    ExpirationDate: {
+        type: Date
     },
     DateCreated: {
         type: Date
@@ -867,8 +929,7 @@ async function Authorization(bearer) {
     var data = {};
     try {
         var authCode = bearer.split(" ")[1];
-        await _axios2.default.post('http://3c101b9b.ngrok.io/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
-            console.log(response.data);
+        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
             data = response.data;
         }).catch(err => {
 
@@ -876,7 +937,6 @@ async function Authorization(bearer) {
         });
         return data;
     } catch (e) {
-        console.log(e);
         result.message = e;
         result.successful = false;
         return result;
@@ -888,6 +948,42 @@ async function Authorization(bearer) {
 /***/ (function(module, exports) {
 
 module.exports = require("axios");
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueryFilters = QueryFilters;
+function QueryFilters(filters, context) {
+
+  var request = JSON.parse(JSON.stringify(filters));
+  var result = {};
+
+  var data = request.split(',');
+
+  for (var i in data) {
+
+    var propertyName = data[i].split(':')[0];
+    var value = data[i].split(':')[1];
+    if (value.indexOf('/') > -1) {
+      var item = value.replace('/', '').replace('/', '');
+      console.log(item);
+      result[propertyName] = new RegExp(item, "i");
+    } else {
+      result[propertyName] = value;
+    }
+  }
+
+  result["Context"] = context;
+  console.log(result);
+  return result;
+};
 
 /***/ })
 /******/ ]);

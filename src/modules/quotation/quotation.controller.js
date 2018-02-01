@@ -3,6 +3,7 @@ import Result from '../../helpers/Result';
 import SearchResult from '../../helpers/SearchResult';
 import { Authorization } from '../../helpers/Authorization';
 import ShoppingCart from '../shoppingcart/shoppingcart.model';
+import { QueryFilters } from '../../helpers/QueryFilters'
 
 export async function create(req, res) {
     var result = new Result();
@@ -12,7 +13,6 @@ export async function create(req, res) {
         var authRes = await Authorization(req.headers.authorization);
 
         if (authRes.successful != true) {
-            console.log(authRes);
             result.model = req.body;
             result.message = authRes.message;
             result.successful = false;
@@ -39,7 +39,7 @@ export async function create(req, res) {
         req.body.Items = shoppingCartRes.Items;
         req.body.Status = "New";
         
-        console.log(req.body)
+ 
         var createRes = await Quotation.create(req.body);
 
         result.model = createRes;
@@ -48,7 +48,7 @@ export async function create(req, res) {
 
         return res.status(200).json(result);
     } catch (e) {
-        console.log(e)
+     
         result.model = null;
         result.message = e.errmsg;
         result.successful = false;
@@ -139,7 +139,13 @@ export async function updateQuotation(req,res) {
     }
 
     req.body.Status = "Quoted";
-
+    
+    if (req.body.ExpirationDate === null || req.body.ExpirationDate === undefined) {
+        var expireDate = new Date();
+        expireDate = expireDate.setDate(expireDate.getDate() + 45);
+        req.body['ExpirationDate'] = expireDate;
+    }
+      
     var item = await Quotation.findOneAndUpdate({_id: req.body._id},req.body,{Upsert: true, Strict: false});
 
     result.model = item;
@@ -185,4 +191,58 @@ export async function getQuotationsById(req,res) {
     result.pages = 0;
     return res.status(500).json(result);
   }
+}
+
+export async function search(req, res) {
+    var result = new SearchResult();
+    
+    try {
+        var authenticationRes = await Authorization(req.headers.authorization);
+            
+        if (authenticationRes.successful != true) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            return res.status(401).json(result);
+        }
+        else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+        
+        if (req.query.limit === null || req.query.limit === undefined) {
+                        req.query.limit = 20;
+        }
+        var filters = {}
+        if (req.query.Filters != null) {
+            filters = QueryFilters(req.query.Filters, req.body.Context);
+        }
+        else {
+            filters["Context"] = req.body.Context;
+        }
+       
+        var quotationsRes = await Quotation.find(filters);
+  
+        var totalcount = quotationsRes.length;
+        var pages = Math.ceil(quotationsRes.length/req.query.limit);
+        
+        var finalItems = await Quotation.find(filters).skip(Number(req.query.skip)).limit(Number(req.query.limit)).sort(req.query.sort);
+        
+        result.items = finalItems;
+        result.totalcount = totalcount;
+        result.pages = pages;
+        result.message = 'Successfully retrieve records';
+        result.successful = true;
+        
+        return res.status(200).json(result);
+    }
+    catch (e) {
+        result.items = 0;
+        result.totalcount = 0;
+        result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+        
+        return res.status(500).json(result);   
+    }
 }

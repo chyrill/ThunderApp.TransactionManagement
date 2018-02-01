@@ -9,5 +9,6 @@ routes.get('/new', QuotationController.searchNew);
 routes.get('/:id', QuotationController.getById);
 routes.put('/quote',QuotationController.updateQuotation);
 routes.get('/quote/:id',QuotationController.getQuotationsById);
+routes.get('', QuotationController.search);
 
 export default routes;

@@ -19,6 +19,9 @@ const QuotationSchema = new Schema({
     Customer: {
         type: Object
     },
+    ExpirationDate: {
+        type: Date
+    },
     DateCreated: {
         type: Date
     },
