@@ -867,7 +867,7 @@ async function Authorization(bearer) {
     var data = {};
     try {
         var authCode = bearer.split(" ")[1];
-        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
+        await _axios2.default.post('http://3c101b9b.ngrok.io/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
             console.log(response.data);
             data = response.data;
         }).catch(err => {
