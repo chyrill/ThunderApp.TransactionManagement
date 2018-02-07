@@ -7,8 +7,9 @@ const routes = new Router();
 routes.post('', QuotationController.create);
 routes.get('/new', QuotationController.searchNew);
 routes.get('/:id', QuotationController.getById);
-routes.put('/quote',QuotationController.updateQuotation);
-routes.get('/quote/:id',QuotationController.getQuotationsById);
+routes.put('/quote', QuotationController.updateQuotation);
+routes.get('/quote/:id', QuotationController.getQuotationsById);
 routes.get('', QuotationController.search);
+routes.put('', QuotationController.update);
 
 export default routes;

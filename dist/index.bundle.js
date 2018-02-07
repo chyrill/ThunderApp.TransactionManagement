@@ -351,6 +351,10 @@ var _quotation = __webpack_require__(16);
 
 var _quotation2 = _interopRequireDefault(_quotation);
 
+var _payment = __webpack_require__(23);
+
+var _payment2 = _interopRequireDefault(_payment);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = app => {
@@ -362,6 +366,7 @@ exports.default = app => {
     });
     app.use('/api/v1/shoppingcart', _shoppingcart2.default);
     app.use('/api/v1/quotation', _quotation2.default);
+    app.use('/api/v1/payment', _payment2.default);
 };
 
 /***/ }),
@@ -540,6 +545,7 @@ routes.get('/:id', QuotationController.getById);
 routes.put('/quote', QuotationController.updateQuotation);
 routes.get('/quote/:id', QuotationController.getQuotationsById);
 routes.get('', QuotationController.search);
+routes.put('', QuotationController.update);
 
 exports.default = routes;
 
@@ -559,6 +565,7 @@ exports.getById = getById;
 exports.updateQuotation = updateQuotation;
 exports.getQuotationsById = getQuotationsById;
 exports.search = search;
+exports.update = update;
 
 var _quotation = __webpack_require__(18);
 
@@ -818,6 +825,38 @@ async function search(req, res) {
     }
 }
 
+async function update(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.DateUpdated = new Date();
+        }
+
+        var updateRes = await _quotation2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { Upsert: true, strict: false });
+
+        result.message = 'Succesfully updated record';
+        result.successful = true;
+        result.model = updateRes;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = req.body;
+
+        return res.status(500).json(result);
+    }
+}
+
 /***/ }),
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -984,6 +1023,374 @@ function QueryFilters(filters, context) {
   console.log(result);
   return result;
 };
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _express = __webpack_require__(0);
+
+var _payment = __webpack_require__(24);
+
+var PaymentController = _interopRequireWildcard(_payment);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const routes = new _express.Router();
+
+routes.post('', PaymentController.create);
+routes.put('', PaymentController.update);
+routes.delete('/:id', PaymentController.remove);
+routes.get('', PaymentController.search);
+routes.get('/:id', PaymentController.getById);
+routes.get('/searchAll', PaymentController.searchAll);
+
+exports.default = routes;
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.create = create;
+exports.update = update;
+exports.getById = getById;
+exports.remove = remove;
+exports.search = search;
+exports.searchAll = searchAll;
+
+var _Result = __webpack_require__(2);
+
+var _Result2 = _interopRequireDefault(_Result);
+
+var _SearchResult = __webpack_require__(19);
+
+var _SearchResult2 = _interopRequireDefault(_SearchResult);
+
+var _Authorization = __webpack_require__(20);
+
+var _QueryFilters = __webpack_require__(22);
+
+var _payment = __webpack_require__(25);
+
+var _payment2 = _interopRequireDefault(_payment);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var paymentId = new Date.getYear() + '-' + new Date.getMonth() + '-' + new Date.getDate();
+
+        req.body['PaymentNo'] = paymentId;
+
+        var createRes = await _payment2.default.create(req.body);
+
+        result.message = 'successfully created record';
+        result.successful = true;
+        result.model = createRes;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = req.body;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function update(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.UpdatedBy = authenticationRes.model.Name;
+            req.body.DateUpdated = new Date();
+        }
+
+        await _payment2.default.findOneAndUpdate({ _id: req.body._id }, req.body, { Upsert: true, strict: false });
+
+        result.message = 'Successfully updated record';
+        result.successful = true;
+        result.model = req.body;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = req.body;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function getById(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var id = req.params.id;
+
+        if (id === null || id === undefined) {
+            result.message = 'Id is required';
+            result.successful = false;
+            result.model = null;
+
+            return res.status(400).json(result);
+        }
+
+        var searchItem = await _payment2.default.findOne({ _id: id, Context: req.body.Context });
+
+        result.message = 'Successfully retrieve record';
+        result.successful = true;
+        result.model = searchItem;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = null;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function remove(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var id = req.params.id;
+
+        if (id === null || id === undefined) {
+            result.message = 'Id is required';
+            result.successful = false;
+            result.model = null;
+
+            return res.status(400).json(result);
+        }
+
+        await _payment2.default.findOneAndRemove({ _id: id, Context: req.body.Context });
+
+        result.message = 'Successfully deleted record';
+        result.successful = true;
+        result.model = null;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = null;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function search(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        if (req.query.limit === null || req.query.limit === undefined) {
+            req.query.limit = 20;
+        }
+        var filters = {};
+        if (req.query.Filters != null) {
+            filters = (0, _QueryFilters.QueryFilters)(req.query.Filters, req.body.Context);
+        } else {
+            filters["Context"] = req.body.Context;
+        }
+
+        var searchItemRes = await _payment2.default.find(filters);
+
+        var totalcount = searchItemRes.length;
+        var pages = Math.ceil(searchItemRes.length / req.query.limit);
+
+        var finalItemRes = await _payment2.default.find(filters).skip(Number(req.query.skip)).limit(Number(req.query.limit)).sort(req.query.sort);
+
+        result.items = finalItemRes;
+        result.totalcount = totalcount;
+        result.pages = pages;
+        result.message = 'Successfully retrieve record';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = 0;
+        result.totalcount = 0;
+        result.pages = 0;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function searchAll(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var searchItemRes = await _payment2.default.find({ Context: req.body.Context });
+
+        result.items = searchItemRes;
+        result.totalcount = searchItemRes.length;
+        result.pages = 1;
+        result.message = 'Successfully retreive records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = 0;
+        result.totalcount = 0;
+        result.pages = 0;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _mongoose = __webpack_require__(1);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _validators = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"validators\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+var _validators2 = _interopRequireDefault(_validators);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const PaymentSchema = new _mongoose.Schema({
+    PaymentNo: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    PurchaseOrderId: {
+        type: String,
+        required: true
+    },
+    Context: {
+        type: String
+    },
+    UserId: {
+        type: String
+    },
+    PaymentType: {
+        type: String
+    },
+    Status: {
+        type: String
+    },
+    Amount: {
+        type: Number
+    },
+    DateCreated: {
+        type: Date,
+        default: new Date()
+    },
+    CreatedBy: {
+        type: String
+    },
+    DateUpdated: {
+        type: Date
+    },
+    UpdatedBy: {
+        type: String
+    }
+});
+
+exports.default = _mongoose2.default.model('Payment', PaymentSchema);
 
 /***/ })
 /******/ ]);
