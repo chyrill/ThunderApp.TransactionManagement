@@ -1369,6 +1369,9 @@ const PaymentSchema = new _mongoose.Schema({
     PaymentType: {
         type: String
     },
+    ReferenceNo: {
+        type: String
+    },
     Status: {
         type: String
     },
