@@ -163,18 +163,10 @@ export async function updateQuotation(req, res) {
 export async function getQuotationsById(req, res) {
     var result = new SearchResult()
     try {
-        var authRes = await Authorization(req.headers.authorization);
 
-        if (authRes.successful != true) {
-            result.model = req.body;
-            result.message = authRes.message;
-            result.successful = false;
-            return res.status(401).json(result);
-        } else {
-            req.body.Context = authRes.model.Context;
-        }
+        var dataList = req.params.id.split('.')
 
-        var searchRes = await Quotation.find({ UserId: req.params.id, Status: "Quoted" });
+        var searchRes = await Quotation.find({ UserId: dataList[1], _id: dataList[0], Status: "Quoted" });
         result.items = searchRes;
         result.totalcount = searchRes.length;
         result.message = 'Succesfully retreive data';

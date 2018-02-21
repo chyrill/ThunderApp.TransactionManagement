@@ -61,7 +61,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -98,6 +98,12 @@ exports.default = Result;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("validator");
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -136,7 +142,7 @@ function envConfig(env) {
 exports.default = Object.assign({}, defaultConfig, envConfig(process.env.NODE_ENV));
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -150,7 +156,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(5);
+var _validator = __webpack_require__(3);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -184,13 +190,105 @@ const ShoppingCartSchema = new _mongoose.Schema({
 exports.default = _mongoose2.default.model('ShoppingCart', ShoppingCartSchema);
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("validator");
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+class SearchResult {
+    constructor(items, totalcount, pages, message, successful) {
+        this.items = items;
+        this.totalcount = totalcount;
+        this.pages = pages;
+        this.message = message;
+        this.successful = successful;
+    }
+}
+
+exports.default = SearchResult;
 
 /***/ }),
-/* 6 */
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Authorization = Authorization;
+
+var _axios = __webpack_require__(22);
+
+var _axios2 = _interopRequireDefault(_axios);
+
+var _Result = __webpack_require__(2);
+
+var _Result2 = _interopRequireDefault(_Result);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+async function Authorization(bearer) {
+    var data = {};
+    try {
+        var authCode = bearer.split(" ")[1];
+        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
+            data = response.data;
+        }).catch(err => {
+
+            data = err.response.data;
+        });
+        return data;
+    } catch (e) {
+        result.message = e;
+        result.successful = false;
+        return result;
+    }
+};
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueryFilters = QueryFilters;
+function QueryFilters(filters, context) {
+
+  var request = JSON.parse(JSON.stringify(filters));
+  var result = {};
+
+  var data = request.split(',');
+
+  for (var i in data) {
+
+    var propertyName = data[i].split(':')[0];
+    var value = data[i].split(':')[1];
+    if (value.indexOf('/') > -1) {
+      var item = value.replace('/', '').replace('/', '');
+      console.log(item);
+      result[propertyName] = new RegExp(item, "i");
+    } else {
+      result[propertyName] = value;
+    }
+  }
+
+  result["Context"] = context;
+  console.log(result);
+  return result;
+};
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -200,17 +298,17 @@ var _express = __webpack_require__(0);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(4);
 
 var _constants2 = _interopRequireDefault(_constants);
 
-__webpack_require__(7);
+__webpack_require__(10);
 
-var _middlewares = __webpack_require__(8);
+var _middlewares = __webpack_require__(11);
 
 var _middlewares2 = _interopRequireDefault(_middlewares);
 
-var _modules = __webpack_require__(13);
+var _modules = __webpack_require__(16);
 
 var _modules2 = _interopRequireDefault(_modules);
 
@@ -235,7 +333,7 @@ app.listen(_constants2.default.PORT, err => {
 });
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -245,7 +343,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(4);
 
 var _constants2 = _interopRequireDefault(_constants);
 
@@ -264,7 +362,7 @@ _mongoose2.default.connection.once('open', () => console.log('MongoDB running'))
 });
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -274,19 +372,19 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _morgan = __webpack_require__(9);
+var _morgan = __webpack_require__(12);
 
 var _morgan2 = _interopRequireDefault(_morgan);
 
-var _bodyParser = __webpack_require__(10);
+var _bodyParser = __webpack_require__(13);
 
 var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
-var _compression = __webpack_require__(11);
+var _compression = __webpack_require__(14);
 
 var _compression2 = _interopRequireDefault(_compression);
 
-var _helmet = __webpack_require__(12);
+var _helmet = __webpack_require__(15);
 
 var _helmet2 = _interopRequireDefault(_helmet);
 
@@ -309,31 +407,31 @@ exports.default = app => {
 };
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports) {
 
 module.exports = require("morgan");
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("compression");
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("helmet");
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -343,11 +441,11 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _shoppingcart = __webpack_require__(14);
+var _shoppingcart = __webpack_require__(17);
 
 var _shoppingcart2 = _interopRequireDefault(_shoppingcart);
 
-var _quotation = __webpack_require__(16);
+var _quotation = __webpack_require__(19);
 
 var _quotation2 = _interopRequireDefault(_quotation);
 
@@ -370,7 +468,7 @@ exports.default = app => {
 };
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -382,7 +480,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _express = __webpack_require__(0);
 
-var _shoppingcart = __webpack_require__(15);
+var _shoppingcart = __webpack_require__(18);
 
 var shoppingCartController = _interopRequireWildcard(_shoppingcart);
 
@@ -397,7 +495,7 @@ routes.put('', shoppingCartController.update);
 exports.default = routes;
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -414,7 +512,7 @@ var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _shoppingcart = __webpack_require__(4);
+var _shoppingcart = __webpack_require__(5);
 
 var _shoppingcart2 = _interopRequireDefault(_shoppingcart);
 
@@ -519,7 +617,7 @@ async function update(req, res) {
 }
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -531,7 +629,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _express = __webpack_require__(0);
 
-var _quotation = __webpack_require__(17);
+var _quotation = __webpack_require__(20);
 
 var QuotationController = _interopRequireWildcard(_quotation);
 
@@ -550,7 +648,7 @@ routes.put('', QuotationController.update);
 exports.default = routes;
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -567,7 +665,7 @@ exports.getQuotationsById = getQuotationsById;
 exports.search = search;
 exports.update = update;
 
-var _quotation = __webpack_require__(18);
+var _quotation = __webpack_require__(21);
 
 var _quotation2 = _interopRequireDefault(_quotation);
 
@@ -575,17 +673,17 @@ var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(19);
+var _SearchResult = __webpack_require__(6);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _Authorization = __webpack_require__(20);
+var _Authorization = __webpack_require__(7);
 
-var _shoppingcart = __webpack_require__(4);
+var _shoppingcart = __webpack_require__(5);
 
 var _shoppingcart2 = _interopRequireDefault(_shoppingcart);
 
-var _QueryFilters = __webpack_require__(22);
+var _QueryFilters = __webpack_require__(8);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -746,18 +844,10 @@ async function updateQuotation(req, res) {
 async function getQuotationsById(req, res) {
     var result = new _SearchResult2.default();
     try {
-        var authRes = await (0, _Authorization.Authorization)(req.headers.authorization);
 
-        if (authRes.successful != true) {
-            result.model = req.body;
-            result.message = authRes.message;
-            result.successful = false;
-            return res.status(401).json(result);
-        } else {
-            req.body.Context = authRes.model.Context;
-        }
+        var dataList = req.params.id.split('.');
 
-        var searchRes = await _quotation2.default.find({ UserId: req.params.id, Status: "Quoted" });
+        var searchRes = await _quotation2.default.find({ UserId: dataList[1], _id: dataList[0], Status: "Quoted" });
         result.items = searchRes;
         result.totalcount = searchRes.length;
         result.message = 'Succesfully retreive data';
@@ -858,7 +948,7 @@ async function update(req, res) {
 }
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -872,7 +962,7 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validator = __webpack_require__(5);
+var _validator = __webpack_require__(3);
 
 var _validator2 = _interopRequireDefault(_validator);
 
@@ -921,108 +1011,10 @@ const QuotationSchema = new _mongoose.Schema({
 exports.default = _mongoose2.default.model('Quotation', QuotationSchema);
 
 /***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-class SearchResult {
-    constructor(items, totalcount, pages, message, successful) {
-        this.items = items;
-        this.totalcount = totalcount;
-        this.pages = pages;
-        this.message = message;
-        this.successful = successful;
-    }
-}
-
-exports.default = SearchResult;
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Authorization = Authorization;
-
-var _axios = __webpack_require__(21);
-
-var _axios2 = _interopRequireDefault(_axios);
-
-var _Result = __webpack_require__(2);
-
-var _Result2 = _interopRequireDefault(_Result);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-async function Authorization(bearer) {
-    var data = {};
-    try {
-        var authCode = bearer.split(" ")[1];
-        await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
-            data = response.data;
-        }).catch(err => {
-
-            data = err.response.data;
-        });
-        return data;
-    } catch (e) {
-        result.message = e;
-        result.successful = false;
-        return result;
-    }
-};
-
-/***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = require("axios");
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.QueryFilters = QueryFilters;
-function QueryFilters(filters, context) {
-
-  var request = JSON.parse(JSON.stringify(filters));
-  var result = {};
-
-  var data = request.split(',');
-
-  for (var i in data) {
-
-    var propertyName = data[i].split(':')[0];
-    var value = data[i].split(':')[1];
-    if (value.indexOf('/') > -1) {
-      var item = value.replace('/', '').replace('/', '');
-      console.log(item);
-      result[propertyName] = new RegExp(item, "i");
-    } else {
-      result[propertyName] = value;
-    }
-  }
-
-  result["Context"] = context;
-  console.log(result);
-  return result;
-};
 
 /***/ }),
 /* 23 */
@@ -1051,6 +1043,7 @@ routes.delete('/:id', PaymentController.remove);
 routes.get('', PaymentController.search);
 routes.get('/:id', PaymentController.getById);
 routes.get('/searchAll', PaymentController.searchAll);
+routes.post('/verify/:id', PaymentController.verifyPayment);
 
 exports.default = routes;
 
@@ -1070,18 +1063,19 @@ exports.getById = getById;
 exports.remove = remove;
 exports.search = search;
 exports.searchAll = searchAll;
+exports.verifyPayment = verifyPayment;
 
 var _Result = __webpack_require__(2);
 
 var _Result2 = _interopRequireDefault(_Result);
 
-var _SearchResult = __webpack_require__(19);
+var _SearchResult = __webpack_require__(6);
 
 var _SearchResult2 = _interopRequireDefault(_SearchResult);
 
-var _Authorization = __webpack_require__(20);
+var _Authorization = __webpack_require__(7);
 
-var _QueryFilters = __webpack_require__(22);
+var _QueryFilters = __webpack_require__(8);
 
 var _payment = __webpack_require__(25);
 
@@ -1105,7 +1099,11 @@ async function create(req, res) {
             req.body.CreatedBy = authenticationRes.model.Name;
         }
 
-        var paymentId = new Date.getYear() + '-' + new Date.getMonth() + '-' + new Date.getDate();
+        if (req.body.PaymentType !== 'Cash') {
+            req.body['Verified'] = false;
+        }
+
+        var paymentId = new Date().getYear() + '-' + new Date().getMonth() + '-' + new Date().getDate();
 
         req.body['PaymentNo'] = paymentId;
 
@@ -1117,6 +1115,7 @@ async function create(req, res) {
 
         return res.status(200).json(result);
     } catch (e) {
+        console.log(e);
         result.message = e.errmsg;
         result.successful = false;
         result.model = req.body;
@@ -1329,6 +1328,43 @@ async function searchAll(req, res) {
     }
 }
 
+async function verifyPayment(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var authenticationRes = await (0, _Authorization.Authorization)(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var searchPayment = await _payment2.default.findOne({ _id: req.params.id, Context: req.body.Context });
+
+        searchPayment.Verified = !searchPayment.Verified;
+
+        await _payment2.default.findOneAndUpdate({ _id: req.params.id }, searchPayment, { Upsert: true, strict: false });
+
+        result.message = 'Successfully verified Payment';
+        result.successful = true;
+        result.model = searchPayment;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        console.log(e);
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = null;
+
+        return res.status(500).json(result);
+    }
+}
+
 /***/ }),
 /* 25 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -1344,9 +1380,9 @@ var _mongoose = __webpack_require__(1);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _validators = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"validators\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var _validator = __webpack_require__(3);
 
-var _validators2 = _interopRequireDefault(_validators);
+var _validator2 = _interopRequireDefault(_validator);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1372,8 +1408,8 @@ const PaymentSchema = new _mongoose.Schema({
     ReferenceNo: {
         type: String
     },
-    Status: {
-        type: String
+    Verified: {
+        type: Boolean
     },
     Amount: {
         type: Number

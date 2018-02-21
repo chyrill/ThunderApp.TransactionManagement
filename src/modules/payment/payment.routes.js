@@ -9,5 +9,6 @@ routes.delete('/:id', PaymentController.remove);
 routes.get('', PaymentController.search);
 routes.get('/:id', PaymentController.getById);
 routes.get('/searchAll', PaymentController.searchAll);
+routes.post('/verify/:id', PaymentController.verifyPayment);
 
 export default routes;

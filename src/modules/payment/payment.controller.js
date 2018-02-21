@@ -21,7 +21,11 @@ export async function create(req, res) {
             req.body.CreatedBy = authenticationRes.model.Name;
         }
 
-        var paymentId = new Date.getYear() + '-' + new Date.getMonth() + '-' + new Date.getDate();
+        if (req.body.PaymentType !== 'Cash') {
+            req.body['Verified'] = false;
+        }
+
+        var paymentId = new Date().getYear() + '-' + new Date().getMonth() + '-' + new Date().getDate();
 
         req.body['PaymentNo'] = paymentId;
 
@@ -33,6 +37,7 @@ export async function create(req, res) {
 
         return res.status(200).json(result);
     } catch (e) {
+        console.log(e)
         result.message = e.errmsg;
         result.successful = false;
         result.model = req.body;
@@ -241,6 +246,44 @@ export async function searchAll(req, res) {
         result.pages = 0;
         result.message = e.errmsg;
         result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+export async function verifyPayment(req, res) {
+    var result = new Result();
+
+    try {
+        var authenticationRes = await Authorization(req.headers.authorization);
+
+        if (authenticationRes.successful != true) {
+            result.model = req.body;
+            result.message = authenticationRes.message;
+            result.successful = false;
+            return res.status(401).json(result);
+        } else {
+            req.body.Context = authenticationRes.model.Context;
+            req.body.CreatedBy = authenticationRes.model.Name;
+        }
+
+        var searchPayment = await Payment.findOne({ _id: req.params.id, Context: req.body.Context })
+
+        searchPayment.Verified = !searchPayment.Verified;
+
+        await Payment.findOneAndUpdate({ _id: req.params.id }, searchPayment, { Upsert: true, strict: false });
+
+        result.message = 'Successfully verified Payment';
+        result.successful = true;
+        result.model = searchPayment;
+
+        return res.status(200).json(result);
+
+    } catch (e) {
+        console.log(e)
+        result.message = e.errmsg;
+        result.successful = false;
+        result.model = null;
 
         return res.status(500).json(result);
     }

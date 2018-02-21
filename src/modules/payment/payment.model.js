@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import validators from 'validators';
+import validator from 'validator';
 
 
 const PaymentSchema = new Schema({
@@ -24,8 +24,8 @@ const PaymentSchema = new Schema({
     ReferenceNo: {
         type: String
     },
-    Status: {
-        type: String
+    Verified: {
+        type: Boolean
     },
     Amount: {
         type: Number
